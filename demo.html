@@ -1,60 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>VISIBLE Demo</title>
+  <title>VISIBLE Clinical Demo</title>
 </head>
 
-<body style="font-family: Arial; padding: 40px; background:#0f172a; color:white;">
+<body style="font-family:Arial;padding:30px;background:#0f172a;color:white;">
 
-<h1>VISIBLE Symptom Demo</h1>
+<h1>VISIBLE Clinical Pattern Engine</h1>
 
-<p>Select symptoms:</p>
+<p>Select symptoms and severity:</p>
+
+<!-- SYSTEMIC -->
+<h3>Systemic</h3>
 
 <label><input type="checkbox" id="fever"> Fever</label><br>
-<label><input type="checkbox" id="sweats"> Night Sweats</label><br>
 <label><input type="checkbox" id="fatigue"> Fatigue</label><br>
-<label><input type="checkbox" id="breath"> Shortness of Breath</label><br>
+<label><input type="checkbox" id="night_sweats"> Night Sweats</label><br>
+<label><input type="checkbox" id="muscle_pain"> Muscle Pain</label><br>
+<label><input type="checkbox" id="joint_pain"> Joint Pain</label><br>
+
+<!-- NEURO -->
+<h3>Neurologic</h3>
+
+<label><input type="checkbox" id="brain_fog"> Brain Fog</label><br>
 <label><input type="checkbox" id="numbness"> Numbness / Tingling</label><br>
+<label><input type="checkbox" id="nerve_pain"> Nerve Pain</label><br>
+<label><input type="checkbox" id="dizziness"> Dizziness</label><br>
+
+<!-- CARDIAC -->
+<h3>Cardiac / Autonomic</h3>
+
+<label><input type="checkbox" id="palpitations"> Heart Palpitations</label><br>
+<label><input type="checkbox" id="chest_pain"> Chest Pain</label><br>
+<label><input type="checkbox" id="short_breath"> Shortness of Breath</label><br>
+<label><input type="checkbox" id="exercise_intolerance"> Exercise Intolerance</label><br>
 
 <br>
 
-<button onclick="analyze()">Run Analysis</button>
+<button onclick="analyze()" style="padding:10px 15px;background:#2563eb;color:white;border:none;border-radius:8px;">
+Run Clinical Pattern Analysis
+</button>
 
 <div id="output" style="margin-top:20px;"></div>
 
 <script>
 function analyze() {
-  let babesia = 0;
+
   let lyme = 0;
+  let babesia = 0;
+  let neuro = 0;
+  let cardiac = 0;
 
-  if (document.getElementById('fever').checked &&
-      document.getElementById('sweats').checked) {
-    babesia += 3;
+  // SYSTEMIC
+  if (fever.checked) babesia++;
+  if (fatigue.checked) { lyme++; babesia++; }
+  if (night_sweats.checked) babesia++;
+  if (muscle_pain.checked) lyme++;
+  if (joint_pain.checked) lyme++;
+
+  // NEURO
+  if (brain_fog.checked) lyme++;
+  if (numbness.checked) neuro++; lyme++;
+  if (nerve_pain.checked) neuro++;
+  if (dizziness.checked) neuro++;
+
+  // CARDIAC
+  if (palpitations.checked) cardiac++;
+  if (chest_pain.checked) cardiac++;
+  if (short_breath.checked) babesia++;
+  if (exercise_intolerance.checked) cardiac++;
+
+  let result = "";
+  let explanation = [];
+
+  // PATTERN LOGIC
+  if (babesia >= 3) {
+    result += "Babesia-like systemic pattern detected. ";
+    explanation.push("Night sweats + fatigue + respiratory symptoms cluster.");
   }
 
-  if (document.getElementById('breath').checked) {
-    babesia += 2;
+  if (neuro >= 2) {
+    result += "Neurologic involvement pattern detected. ";
+    explanation.push("Numbness / dizziness / nerve pain cluster.");
   }
 
-  if (document.getElementById('numbness').checked) {
-    lyme += 2;
+  if (cardiac >= 2) {
+    result += "Autonomic/Cardiac pattern detected. ";
+    explanation.push("Palpitations + chest symptoms cluster.");
   }
 
-  let result = "Low signal detected";
-
-  if (babesia >= 4) {
-    result = "HIGH Babesia-like pattern detected";
-  } else if (lyme >= 2) {
-    result = "Neurologic Lyme-like pattern detected";
+  if (result === "") {
+    result = "Low pattern signal detected.";
+    explanation.push("Insufficient symptom clustering for pattern classification.");
   }
 
   document.getElementById("output").innerHTML =
-    "<h2>Result</h2><p>" + result + "</p>";
+    "<h2>Result</h2><p>" + result + "</p>" +
+    "<h3>Explainability</h3><ul><li>" +
+    explanation.join("</li><li>") +
+    "</li></ul>";
 }
 </script>
 
-<br>
-<a href="index.html" style="color:#60a5fa;">← Back Home</a>
+<br><br>
+<a href="index.html" style="color:#60a5fa;">Home</a> |
+<a href="about.html" style="color:#60a5fa;">About</a>
 
 </body>
 </html>
