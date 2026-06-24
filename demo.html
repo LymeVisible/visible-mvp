@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VISIBLE Demo</title>
+</head>
+
+<body style="font-family: Arial; padding: 40px; background:#0f172a; color:white;">
+
+<h1>VISIBLE Symptom Demo</h1>
+
+<p>Select symptoms:</p>
+
+<label><input type="checkbox" id="fever"> Fever</label><br>
+<label><input type="checkbox" id="sweats"> Night Sweats</label><br>
+<label><input type="checkbox" id="fatigue"> Fatigue</label><br>
+<label><input type="checkbox" id="breath"> Shortness of Breath</label><br>
+<label><input type="checkbox" id="numbness"> Numbness / Tingling</label><br>
+
+<br>
+
+<button onclick="analyze()">Run Analysis</button>
+
+<div id="output" style="margin-top:20px;"></div>
+
+<script>
+function analyze() {
+  let babesia = 0;
+  let lyme = 0;
+
+  if (document.getElementById('fever').checked &&
+      document.getElementById('sweats').checked) {
+    babesia += 3;
+  }
+
+  if (document.getElementById('breath').checked) {
+    babesia += 2;
+  }
+
+  if (document.getElementById('numbness').checked) {
+    lyme += 2;
+  }
+
+  let result = "Low signal detected";
+
+  if (babesia >= 4) {
+    result = "HIGH Babesia-like pattern detected";
+  } else if (lyme >= 2) {
+    result = "Neurologic Lyme-like pattern detected";
+  }
+
+  document.getElementById("output").innerHTML =
+    "<h2>Result</h2><p>" + result + "</p>";
+}
+</script>
+
+<br>
+<a href="index.html" style="color:#60a5fa;">← Back Home</a>
+
+</body>
+</html>
