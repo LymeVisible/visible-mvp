@@ -4,6 +4,8 @@
 <head>
   <title>VISIBLE Clinical Dashboard</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
@@ -81,12 +83,18 @@ Cardiac:
 
 <div id="output" class="card"></div>
 
+<div class="card">
+  <h2>Symptom Pattern Chart</h2>
+  <canvas id="symptomChart"></canvas>
+</div>
+
 </div>
 
 <script>
+let chart;
+
 function analyze() {
 
-  // COINFECTION SCORES (balanced properly)
   let lyme = 0;
   let babesia = 0;
   let anaplasma = 0;
@@ -94,11 +102,17 @@ function analyze() {
   let bartonella = 0;
   let rickettsia = 0;
 
+  let fever = document.getElementById("fever");
+  let fatigue = document.getElementById("fatigue");
+  let night_sweats = document.getElementById("night_sweats");
+  let numbness = document.getElementById("numbness");
+  let palpitations = document.getElementById("palpitations");
+  let short_breath = document.getElementById("short_breath");
+
   let fatigue_s = +document.getElementById("fatigue_s").value;
   let neuro_s = +document.getElementById("neuro_s").value;
   let cardiac_s = +document.getElementById("cardiac_s").value;
 
-  // SYSTEMIC
   if (fever.checked) {
     babesia++;
     anaplasma++;
@@ -113,15 +127,10 @@ function analyze() {
   }
 
   if (night_sweats.checked) babesia++;
-
-  // NEURO
   if (numbness.checked) lyme += 2;
-
-  // CARDIAC
   if (palpitations.checked) bartonella++;
   if (short_breath.checked) babesia++;
 
-  // severity weighting
   if (fatigue_s > 7) babesia++;
   if (neuro_s > 7) lyme++;
   if (cardiac_s > 7) bartonella++;
@@ -130,19 +139,34 @@ function analyze() {
 
   if (lyme >= 3) results.push("Lyme neurologic/systemic pattern");
   if (babesia >= 3) results.push("Babesia pattern (hemolytic/systemic)");
-  if (anaplasma >= 2) results.push("Anaplasma pattern (cytopenic)");
+  if (anaplasma >= 2) results.push("Anaplasma pattern");
   if (ehrlichia >= 2) results.push("Ehrlichia pattern");
-  if (bartonella >= 2) results.push("Bartonella pattern (neuro/cardiac)");
+  if (bartonella >= 2) results.push("Bartonella pattern");
   if (rickettsia >= 2) results.push("Rickettsial pattern");
 
-  if (results.length === 0) {
-    results.push("Low pattern signal");
-  }
+  if (results.length === 0) results.push("Low pattern signal");
 
   document.getElementById("output").innerHTML =
     "<h2>Results</h2><ul><li>" +
     results.join("</li><li>") +
     "</li></ul>";
+
+  const ctx = document.getElementById("symptomChart");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Lyme","Babesia","Anaplasma","Ehrlichia","Bartonella","Rickettsia"],
+      datasets: [{
+        label: "Pattern Score",
+        data: [lyme,babesia,anaplasma,ehrlichia,bartonella,rickettsia],
+        backgroundColor: ["#60a5fa","#f87171","#fbbf24","#34d399","#a78bfa","#fb7185"]
+      }]
+    }
+  });
+
 }
 </script>
 
