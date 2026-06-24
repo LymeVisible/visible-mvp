@@ -1,110 +1,150 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>VISIBLE Clinical Demo</title>
+  <title>VISIBLE Clinical Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: Inter, Arial;
+      background: #0b1220;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    .container {
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .card {
+      background: #111827;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    button {
+      background: #2563eb;
+      border: none;
+      padding: 10px 14px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    input[type="range"] {
+      width: 200px;
+    }
+  </style>
 </head>
 
-<body style="font-family:Arial;padding:30px;background:#0f172a;color:white;">
+<body>
 
-<h1>VISIBLE Clinical Pattern Engine</h1>
+<div class="container">
 
-<p>Select symptoms and severity:</p>
+<h1>VISIBLE Clinical Decision Engine</h1>
 
-<!-- SYSTEMIC -->
-<h3>Systemic</h3>
+<p>Select symptoms and severity levels below.</p>
+
+<div class="card">
+<h2>Symptoms</h2>
 
 <label><input type="checkbox" id="fever"> Fever</label><br>
 <label><input type="checkbox" id="fatigue"> Fatigue</label><br>
 <label><input type="checkbox" id="night_sweats"> Night Sweats</label><br>
-<label><input type="checkbox" id="muscle_pain"> Muscle Pain</label><br>
-<label><input type="checkbox" id="joint_pain"> Joint Pain</label><br>
-
-<!-- NEURO -->
-<h3>Neurologic</h3>
-
-<label><input type="checkbox" id="brain_fog"> Brain Fog</label><br>
 <label><input type="checkbox" id="numbness"> Numbness / Tingling</label><br>
-<label><input type="checkbox" id="nerve_pain"> Nerve Pain</label><br>
-<label><input type="checkbox" id="dizziness"> Dizziness</label><br>
-
-<!-- CARDIAC -->
-<h3>Cardiac / Autonomic</h3>
-
 <label><input type="checkbox" id="palpitations"> Heart Palpitations</label><br>
-<label><input type="checkbox" id="chest_pain"> Chest Pain</label><br>
 <label><input type="checkbox" id="short_breath"> Shortness of Breath</label><br>
-<label><input type="checkbox" id="exercise_intolerance"> Exercise Intolerance</label><br>
 
-<br>
+</div>
 
-<button onclick="analyze()" style="padding:10px 15px;background:#2563eb;color:white;border:none;border-radius:8px;">
-Run Clinical Pattern Analysis
-</button>
+<div class="card">
+<h2>Severity Scales</h2>
 
-<div id="output" style="margin-top:20px;"></div>
+Fatigue:
+<input type="range" id="fatigue_s" min="0" max="10"><br><br>
+
+Neurologic:
+<input type="range" id="neuro_s" min="0" max="10"><br><br>
+
+Cardiac:
+<input type="range" id="cardiac_s" min="0" max="10"><br>
+
+</div>
+
+<button onclick="analyze()">Run Analysis</button>
+
+<div id="output" class="card"></div>
+
+</div>
 
 <script>
 function analyze() {
 
+  // COINFECTION SCORES (balanced properly)
   let lyme = 0;
   let babesia = 0;
-  let neuro = 0;
-  let cardiac = 0;
+  let anaplasma = 0;
+  let ehrlichia = 0;
+  let bartonella = 0;
+  let rickettsia = 0;
+
+  let fatigue_s = +document.getElementById("fatigue_s").value;
+  let neuro_s = +document.getElementById("neuro_s").value;
+  let cardiac_s = +document.getElementById("cardiac_s").value;
 
   // SYSTEMIC
-  if (fever.checked) babesia++;
-  if (fatigue.checked) { lyme++; babesia++; }
+  if (fever.checked) {
+    babesia++;
+    anaplasma++;
+    ehrlichia++;
+    rickettsia++;
+  }
+
+  if (fatigue.checked) {
+    lyme++;
+    babesia++;
+    ehrlichia++;
+  }
+
   if (night_sweats.checked) babesia++;
-  if (muscle_pain.checked) lyme++;
-  if (joint_pain.checked) lyme++;
 
   // NEURO
-  if (brain_fog.checked) lyme++;
-  if (numbness.checked) neuro++; lyme++;
-  if (nerve_pain.checked) neuro++;
-  if (dizziness.checked) neuro++;
+  if (numbness.checked) lyme += 2;
 
   // CARDIAC
-  if (palpitations.checked) cardiac++;
-  if (chest_pain.checked) cardiac++;
+  if (palpitations.checked) bartonella++;
   if (short_breath.checked) babesia++;
-  if (exercise_intolerance.checked) cardiac++;
 
-  let result = "";
-  let explanation = [];
+  // severity weighting
+  if (fatigue_s > 7) babesia++;
+  if (neuro_s > 7) lyme++;
+  if (cardiac_s > 7) bartonella++;
 
-  // PATTERN LOGIC
-  if (babesia >= 3) {
-    result += "Babesia-like systemic pattern detected. ";
-    explanation.push("Night sweats + fatigue + respiratory symptoms cluster.");
-  }
+  let results = [];
 
-  if (neuro >= 2) {
-    result += "Neurologic involvement pattern detected. ";
-    explanation.push("Numbness / dizziness / nerve pain cluster.");
-  }
+  if (lyme >= 3) results.push("Lyme neurologic/systemic pattern");
+  if (babesia >= 3) results.push("Babesia pattern (hemolytic/systemic)");
+  if (anaplasma >= 2) results.push("Anaplasma pattern (cytopenic)");
+  if (ehrlichia >= 2) results.push("Ehrlichia pattern");
+  if (bartonella >= 2) results.push("Bartonella pattern (neuro/cardiac)");
+  if (rickettsia >= 2) results.push("Rickettsial pattern");
 
-  if (cardiac >= 2) {
-    result += "Autonomic/Cardiac pattern detected. ";
-    explanation.push("Palpitations + chest symptoms cluster.");
-  }
-
-  if (result === "") {
-    result = "Low pattern signal detected.";
-    explanation.push("Insufficient symptom clustering for pattern classification.");
+  if (results.length === 0) {
+    results.push("Low pattern signal");
   }
 
   document.getElementById("output").innerHTML =
-    "<h2>Result</h2><p>" + result + "</p>" +
-    "<h3>Explainability</h3><ul><li>" +
-    explanation.join("</li><li>") +
+    "<h2>Results</h2><ul><li>" +
+    results.join("</li><li>") +
     "</li></ul>";
 }
 </script>
-
-<br><br>
-<a href="index.html" style="color:#60a5fa;">Home</a> |
-<a href="about.html" style="color:#60a5fa;">About</a>
 
 </body>
 </html>
