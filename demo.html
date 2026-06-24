@@ -1,174 +1,103 @@
-<!DOCTYPE html>
-<html>
+// ===============================
+// INPUTS
+// ===============================
 
-<head>
-  <title>VISIBLE Clinical Dashboard</title>
+let lyme = 0;
+let babesia = 0;
+let anaplasma = 0;
+let ehrlichia = 0;
+let bartonella = 0;
+let rickettsia = 0;
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+let fever = document.getElementById("fever");
+let fatigue = document.getElementById("fatigue");
+let night_sweats = document.getElementById("night_sweats");
+let numbness = document.getElementById("numbness");
+let palpitations = document.getElementById("palpitations");
+let short_breath = document.getElementById("short_breath");
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+let fatigue_s = +document.getElementById("fatigue_s").value;
+let neuro_s = +document.getElementById("neuro_s").value;
+let cardiac_s = +document.getElementById("cardiac_s").value;
 
-  <style>
-    body {
-      font-family: Inter, Arial;
-      background: #0b1220;
-      color: #e5e7eb;
-      margin: 0;
-    }
 
-    .container {
-      padding: 30px;
-      max-width: 1000px;
-      margin: auto;
-    }
+// ===============================
+// SCORING ENGINE (BALANCED + MULTI-PATH)
+// ===============================
 
-    .card {
-      background: #111827;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 15px;
-    }
-
-    button {
-      background: #2563eb;
-      border: none;
-      padding: 10px 14px;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    input[type="range"] {
-      width: 200px;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>VISIBLE Clinical Decision Engine</h1>
-
-<p>Select symptoms and severity levels below.</p>
-
-<div class="card">
-<h2>Symptoms</h2>
-
-<label><input type="checkbox" id="fever"> Fever</label><br>
-<label><input type="checkbox" id="fatigue"> Fatigue</label><br>
-<label><input type="checkbox" id="night_sweats"> Night Sweats</label><br>
-<label><input type="checkbox" id="numbness"> Numbness / Tingling</label><br>
-<label><input type="checkbox" id="palpitations"> Heart Palpitations</label><br>
-<label><input type="checkbox" id="short_breath"> Shortness of Breath</label><br>
-
-</div>
-
-<div class="card">
-<h2>Severity Scales</h2>
-
-Fatigue:
-<input type="range" id="fatigue_s" min="0" max="10"><br><br>
-
-Neurologic:
-<input type="range" id="neuro_s" min="0" max="10"><br><br>
-
-Cardiac:
-<input type="range" id="cardiac_s" min="0" max="10"><br>
-
-</div>
-
-<button onclick="analyze()">Run Analysis</button>
-
-<div id="output" class="card"></div>
-
-<div class="card">
-  <h2>Symptom Pattern Chart</h2>
-  <canvas id="symptomChart"></canvas>
-</div>
-
-</div>
-
-<script>
-let chart;
-
-function analyze() {
-
-  let lyme = 0;
-  let babesia = 0;
-  let anaplasma = 0;
-  let ehrlichia = 0;
-  let bartonella = 0;
-  let rickettsia = 0;
-
-  let fever = document.getElementById("fever");
-  let fatigue = document.getElementById("fatigue");
-  let night_sweats = document.getElementById("night_sweats");
-  let numbness = document.getElementById("numbness");
-  let palpitations = document.getElementById("palpitations");
-  let short_breath = document.getElementById("short_breath");
-
-  let fatigue_s = +document.getElementById("fatigue_s").value;
-  let neuro_s = +document.getElementById("neuro_s").value;
-  let cardiac_s = +document.getElementById("cardiac_s").value;
-
-  if (fever.checked) {
-    babesia++;
-    anaplasma++;
-    ehrlichia++;
-    rickettsia++;
-  }
-
-  if (fatigue.checked) {
-    lyme++;
-    babesia++;
-    ehrlichia++;
-  }
-
-  if (night_sweats.checked) babesia++;
-  if (numbness.checked) lyme += 2;
-  if (palpitations.checked) bartonella++;
-  if (short_breath.checked) babesia++;
-
-  if (fatigue_s > 7) babesia++;
-  if (neuro_s > 7) lyme++;
-  if (cardiac_s > 7) bartonella++;
-
-  let results = [];
-
-  if (lyme >= 3) results.push("Lyme neurologic/systemic pattern");
-  if (babesia >= 3) results.push("Babesia pattern (hemolytic/systemic)");
-  if (anaplasma >= 2) results.push("Anaplasma pattern");
-  if (ehrlichia >= 2) results.push("Ehrlichia pattern");
-  if (bartonella >= 2) results.push("Bartonella pattern");
-  if (rickettsia >= 2) results.push("Rickettsial pattern");
-
-  if (results.length === 0) results.push("Low pattern signal");
-
-  document.getElementById("output").innerHTML =
-    "<h2>Results</h2><ul><li>" +
-    results.join("</li><li>") +
-    "</li></ul>";
-
-  const ctx = document.getElementById("symptomChart");
-
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Lyme","Babesia","Anaplasma","Ehrlichia","Bartonella","Rickettsia"],
-      datasets: [{
-        label: "Pattern Score",
-        data: [lyme,babesia,anaplasma,ehrlichia,bartonella,rickettsia],
-        backgroundColor: ["#60a5fa","#f87171","#fbbf24","#34d399","#a78bfa","#fb7185"]
-      }]
-    }
-  });
-
+// Systemic infection signals
+if (fever.checked) {
+  babesia += 1;
+  anaplasma += 2;
+  ehrlichia += 2;
+  rickettsia += 2;
 }
-</script>
 
-</body>
-</html>
+// Fatigue / constitutional
+if (fatigue.checked) {
+  lyme += 2;
+  babesia += 1;
+  ehrlichia += 1;
+}
+
+// Night sweats / autonomic pattern
+if (night_sweats.checked) {
+  babesia += 2;
+  bartonella += 1;
+}
+
+// Neurologic symptoms
+if (numbness.checked) {
+  lyme += 3;
+  bartonella += 1;
+}
+
+// Cardiac / autonomic symptoms
+if (palpitations.checked) {
+  bartonella += 2;
+  lyme += 1;
+}
+
+if (short_breath.checked) {
+  babesia += 2;
+  lyme += 1;
+}
+
+
+// Severity weighting (kept moderate so it doesn’t dominate results)
+if (fatigue_s > 7) {
+  babesia += 1;
+  lyme += 1;
+}
+
+if (neuro_s > 7) {
+  lyme += 2;
+  bartonella += 1;
+}
+
+if (cardiac_s > 7) {
+  bartonella += 2;
+}
+
+
+// ===============================
+// MULTI-DIAGNOSIS OUTPUT (NO SINGLE WINNER)
+// ===============================
+
+let results = [];
+
+if (lyme >= 3) results.push("Lyme pattern (neurologic / fatigue dominant)");
+if (babesia >= 3) results.push("Babesia pattern (systemic / sweats / air hunger)");
+if (anaplasma >= 3) results.push("Anaplasma pattern (febrile / cytopenic pattern)");
+if (ehrlichia >= 3) results.push("Ehrlichia pattern (systemic inflammatory)");
+if (bartonella >= 3) results.push("Bartonella pattern (neuro-cardiac / dysautonomia-like)");
+if (rickettsia >= 3) results.push("Rickettsial pattern (acute febrile illness)");
+
+if (results.length === 0) {
+  results.push("No dominant tick-borne pattern detected");
+}
+
+document.getElementById("output").innerHTML =
+  "<h2>Pattern Results (Multiple Patterns Possible)</h2><ul><li>" +
+  results.join("</li><li>") +
+  "</li></ul>";
